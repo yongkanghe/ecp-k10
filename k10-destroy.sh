@@ -1,6 +1,5 @@
 starttime=$(date +%s)
 . setenv.sh
-# MY_PREFIX=$(echo $(whoami) | sed -e 's/\_//g' | sed -e 's/\.//g' | awk '{print tolower($0)}')
 
 echo "-------Delete postgresql & kasten-io"
 helm uninstall postgres -n k10-postgresql
@@ -10,9 +9,6 @@ kubectl delete ns kasten-io
 
 echo '-------Deleting objects from the bucket'
 aws s3 rb s3://$(cat hcp_bucketname) --force
-
-# echo '-------Deleting kubeconfig for this cluster'
-# kubectl config delete-context $(kubectl config get-contexts | grep $MY_PREFIX-$MY_CLUSTER | awk '{print $2}')
 
 echo "" | awk '{print $1}'
 endtime=$(date +%s)
