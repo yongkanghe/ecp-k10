@@ -1,14 +1,10 @@
 echo '-------Deploying Postgresql on HCP and Protecting it via K10'
 starttime=$(date +%s)
 . setenv.sh
-# MY_PREFIX=$(echo $(whoami) | sed -e 's/\_//g' | sed -e 's/\.//g' | awk '{print tolower($0)}')
 export AWS_ACCESS_KEY_ID=$(cat awsaccess | head -1 | sed -e 's/\"//g') 
 export AWS_SECRET_ACCESS_KEY=$(cat awsaccess | tail -1 | sed -e 's/\"//g')
 hcp_BUCKET_NAME=$MY_BUCKET-$(date +%s)
 echo $hcp_BUCKET_NAME > hcp_bucketname
-
-# echo '-------Retrieving OpenShift Cluster kubeconfig'
-# ibmcloud oc cluster config -c $MY_PREFIX-$MY_CLUSTER --admin
 
 echo '-------Install K10'
 kubectl create ns kasten-io
@@ -30,16 +26,29 @@ echo '-------Set the default ns to k10'
 kubectl config set-context --current --namespace kasten-io
 
 echo '-------Create and Annotate the volumesnapshotclass'
+#Get the name of the secret that contains credentials for HPE Datafabric cluster
+SECRETNAME=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.csi\.storage\.k8s\.io\/provisioner-secret-name}')
+#Get the namespace in which the secret HPE Datafabric cluster is deployed
+SECRETNAMESPACE=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.csi\.storage\.k8s\.io\/provisioner-secret-namespace}')
+#Get the HPE datafabric cluster’s rest server ip addresses
+RESTSERVER=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.restServers}')
+#Get the HPE datafabric cluster’s name
+CLUSTER=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.cluster}')
 cat <<EOF | kubectl apply -f -
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshotClass
 metadata:
   annotations:
     k10.kasten.io/is-snapshot-class: "true"
-  name: hcp-mapr-snapclass
+  name: mapr-snapclass
+  namespace: $SECRETNAMESPACE
 driver: com.mapr.csi-kdf
 deletionPolicy: Delete
 parameters:
+  restServers: $RESTSERVER
+  cluster: $CLUSTER
+  csi.storage.k8s.io/snapshotter-secret-name: $SECRETNAME
+  csi.storage.k8s.io/snapshotter-secret-namespace: $SECRETNAMESPACE
 EOF
 
 echo '-------Deploying a Postgresql database'
@@ -49,13 +58,6 @@ helm install --namespace k10-postgresql postgres bitnami/postgresql \
   --set persistence.size=1Gi \
   --set persistence.storageClass=hcp-mapr-cluster \
   --set volumePermissions.enabled=true
-
-# echo '-------Deploy a MySQL database'
-# kubectl create namespace k10-mysql
-# helm repo add bitnami https://charts.bitnami.com/bitnami
-# helm install mysql bitnami/mysql --namespace=k10-mysql \
-#   --set primary.persistence.size=1Gi,secondary.persistence.size=1Gi	\
-#   --set persistence.storageClass=hcp-mapr-cluster  
 
 echo '-------Output the Cluster ID'
 clusterid=$(kubectl get namespace default -ojsonpath="{.metadata.uid}{'\n'}")
@@ -71,7 +73,9 @@ kubectl create secret generic k10-s3-secret \
 
 echo '-------Wait for 1 or 2 mins for the Web UI IP and token'
 kubectl wait --for=condition=ready --timeout=180s -n kasten-io pod -l component=jobs
-k10ui=http://$(kubectl get route -n kasten-io | grep k10-route | awk '{print $2}')/k10/#
+#k10ui=http://$(kubectl get svc gateway-ext | awk '{print $4}'|grep -v EXTERNAL)/k10/#
+nodeport=$(kubectl get svc gateway-ext | awk '{print $5}' | grep -v PORT | sed -e 's/80://g' | sed -e 's/\/TCP//g')
+k10ui=http://52.74.195.165:$nodeport/k10/#
 
 echo -e "\nCopy below token before clicking the link to log into K10 Web UI -->> $k10ui" >> hcp-token
 echo "" | awk '{print $1}' >> hcp-token
