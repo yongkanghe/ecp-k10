@@ -2,7 +2,7 @@ I just want to build a HPE Ezmeral Container Platform to learn the various Data 
 
 ![image](https://f.hubspotusercontent30.net/hub/3855032/hubfs/Blog%20Images/HPE%20Ezmeral%20Container%20Platform/Blog-featured-hpe-ezmeral-kasten.png?width=720&name=Blog-featured-hpe-ezmeral-kasten.png)
 
-This script based automation allows you to build a ready-to-use Kasten K10 demo environment on a running HPE Ezmeral Container Platform on AWS Cloud. If you don't have a HPE ECP Cluster, you can watch the Youtube video below. Once the ECP Cluster is up running, you can proceed to the next steps. 
+This script based automation allows you to build a ready-to-use Kasten K10 demo environment on a running HPE Ezmeral Container Platform on AWS Cloud in 3 minutes. If you don't have a HPE ECP Cluster, you can watch the Youtube video and follow the guide to build a ECP cluster on AWS Cloud. Once the ECP Cluster is up running, you can proceed to the next steps. 
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/KUlH2o405oI/0.jpg)](https://www.youtube.com/watch?v=KUlH2o405oI)
 
