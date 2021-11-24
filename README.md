@@ -1,6 +1,6 @@
 I just want to build a HPE Ezmeral Container Platform to learn the various Data Management capabilities e.g. Backup/Restore, Disaster Recovery and Application Mobility. It is challenging to create a HPE ECP cluster if you are not familiar to it. After the ECP Cluster is up running, we still need to install Kasten, create a sample DB, create policies etc.. The whole process is not that simple.
 
-![image](https://f.hubspotusercontent30.net/hub/3855032/hubfs/Blog-featured-image-HPE%20Ezmeral-Kasten%20K10.png?width=720&name=Blog-featured-image-HPE%20Ezmeral-Kasten%20K10.png)
+![image](https://camo.githubusercontent.com/d5e96661da3c02b0511af345f2c509e33567a09160d37d0df21c4e1e96b89d91/68747470733a2f2f662e68756273706f7475736572636f6e74656e7433302e6e65742f6875622f333835353033322f68756266732f426c6f672d66656174757265642d696d6167652d485045253230457a6d6572616c2d4b617374656e2532304b31302e706e673f77696474683d373230266e616d653d426c6f672d66656174757265642d696d6167652d485045253230457a6d6572616c2d4b617374656e2532304b31302e706e67)
 
 This script based automation allows you to build a ready-to-use Kasten K10 demo environment on a running HPE Ezmeral Container Platform on AWS Cloud. If you don't have a HPE ECP Cluster, you can watch the Youtube video below. Once the ECP Cluster is up running, you can proceed to the next steps. 
 
