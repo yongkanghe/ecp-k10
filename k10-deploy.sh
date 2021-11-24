@@ -1,10 +1,40 @@
-echo '-------Deploying Postgresql on HCP and Protecting it via K10'
+echo '-------Deploying Postgresql on ECP and Protecting it via K10'
 starttime=$(date +%s)
-. setenv.sh
+. ~/ecp-k10/setenv.sh
 export AWS_ACCESS_KEY_ID=$(cat awsaccess | head -1 | sed -e 's/\"//g') 
 export AWS_SECRET_ACCESS_KEY=$(cat awsaccess | tail -1 | sed -e 's/\"//g')
-hcp_BUCKET_NAME=$MY_BUCKET-$(date +%s)
-echo $hcp_BUCKET_NAME > hcp_bucketname
+ecp_bucket_NAME=$MY_BUCKET-$(date +%s)
+echo $ecp_bucket_NAME > ecp_bucketname
+
+echo '-------Create and Annotate the volumesnapshotclass'
+#Get the name of the secret that contains credentials for HPE Datafabric cluster
+SECRETNAME=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.csi\.storage\.k8s\.io\/provisioner-secret-name}')
+
+#Get the namespace in which the secret HPE Datafabric cluster is deployed
+SECRETNAMESPACE=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.csi\.storage\.k8s\.io\/provisioner-secret-namespace}')
+
+#Get the HPE datafabric cluster’s rest server ip addresses
+RESTSERVER=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.restServers}')
+
+#Get the HPE datafabric cluster’s name
+CLUSTER=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.cluster}')
+
+cat <<EOF | kubectl apply -f -
+apiVersion: snapshot.storage.k8s.io/v1beta1
+kind: VolumeSnapshotClass
+metadata:
+  annotations:
+    k10.kasten.io/is-snapshot-class: "true"
+  name: mapr-snapshotclass
+  namespace: $SECRETNAMESPACE
+driver: com.mapr.csi-kdf
+deletionPolicy: Delete
+parameters:
+  restServers: $RESTSERVER
+  cluster: $CLUSTER
+  csi.storage.k8s.io/snapshotter-secret-name: $SECRETNAME
+  csi.storage.k8s.io/snapshotter-secret-namespace: $SECRETNAMESPACE
+EOF
 
 echo '-------Install K10'
 kubectl create ns kasten-io
@@ -25,32 +55,6 @@ helm install k10 kasten/k10 --namespace=kasten-io \
 echo '-------Set the default ns to k10'
 kubectl config set-context --current --namespace kasten-io
 
-echo '-------Create and Annotate the volumesnapshotclass'
-#Get the name of the secret that contains credentials for HPE Datafabric cluster
-SECRETNAME=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.csi\.storage\.k8s\.io\/provisioner-secret-name}')
-#Get the namespace in which the secret HPE Datafabric cluster is deployed
-SECRETNAMESPACE=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.csi\.storage\.k8s\.io\/provisioner-secret-namespace}')
-#Get the HPE datafabric cluster’s rest server ip addresses
-RESTSERVER=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.restServers}')
-#Get the HPE datafabric cluster’s name
-CLUSTER=$(kubectl get sc -o=jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io\/is-default-class=="true")].parameters.cluster}')
-cat <<EOF | kubectl apply -f -
-apiVersion: snapshot.storage.k8s.io/v1beta1
-kind: VolumeSnapshotClass
-metadata:
-  annotations:
-    k10.kasten.io/is-snapshot-class: "true"
-  name: mapr-snapclass
-  namespace: $SECRETNAMESPACE
-driver: com.mapr.csi-kdf
-deletionPolicy: Delete
-parameters:
-  restServers: $RESTSERVER
-  cluster: $CLUSTER
-  csi.storage.k8s.io/snapshotter-secret-name: $SECRETNAME
-  csi.storage.k8s.io/snapshotter-secret-namespace: $SECRETNAMESPACE
-EOF
-
 echo '-------Deploying a Postgresql database'
 kubectl create namespace k10-postgresql
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -61,8 +65,9 @@ helm install --namespace k10-postgresql postgres bitnami/postgresql \
 
 echo '-------Output the Cluster ID'
 clusterid=$(kubectl get namespace default -ojsonpath="{.metadata.uid}{'\n'}")
-echo "" | awk '{print $1}' > hcp-token
-echo My Cluster ID is $clusterid >> hcp-token
+echo "" | awk '{print $1}' > ecp-token
+echo My Cluster ID is $clusterid >> ecp-token
+echo "" | awk '{print $1}' > ecp-token
 
 echo '-------Creating a S3 profile secret'
 kubectl create secret generic k10-s3-secret \
@@ -74,17 +79,21 @@ kubectl create secret generic k10-s3-secret \
 echo '-------Wait for 1 or 2 mins for the Web UI IP and token'
 kubectl wait --for=condition=ready --timeout=180s -n kasten-io pod -l component=jobs
 #k10ui=http://$(kubectl get svc gateway-ext | awk '{print $4}'|grep -v EXTERNAL)/k10/#
-nodeport=$(kubectl get svc gateway-ext | awk '{print $5}' | grep -v PORT | sed -e 's/80://g' | sed -e 's/\/TCP//g')
-k10ui=http://52.74.195.165:$nodeport/k10/#
+kubectl expose service gateway -n kasten-io --type=NodePort --name=gateway-nodeport
+kubectl label service gateway-nodeport hpecp.hpe.com/hpecp-internal-gateway=true -n kasten-io
 
-echo -e "\nCopy below token before clicking the link to log into K10 Web UI -->> $k10ui" >> hcp-token
-echo "" | awk '{print $1}' >> hcp-token
 sa_secret=$(kubectl get serviceaccount k10-k10 -o jsonpath="{.secrets[0].name}" --namespace kasten-io)
-echo "Here is the token to login K10 Web UI" >> hcp-token
-echo "" | awk '{print $1}' >> hcp-token
-kubectl get secret $sa_secret --namespace kasten-io -ojsonpath="{.data.token}{'\n'}" | base64 --decode | awk '{print $1}' >> hcp-token
+echo "Here is the token to login K10 Web UI" >> ecp-token
+echo "" | awk '{print $1}' >> ecp-token
+kubectl get secret $sa_secret --namespace kasten-io -ojsonpath="{.data.token}{'\n'}" | base64 --decode | awk '{print $1}' >> ecp-token
 
-echo "" | awk '{print $1}' >> hcp-token
+echo "" | awk '{print $1}' >> ecp-token
+
+nodeport=$(kubectl describe svc gateway-nodeport -n kasten-io | grep Annotations | awk '{print $3}')
+k10ui=http://$nodeport/k10/#
+
+echo -e "\nCopy the token before clicking the link to log into K10 Web UI -->> $k10ui" >> ecp-token
+echo "" | awk '{print $1}' >> ecp-token
 
 echo '-------Waiting for K10 services are up running in about 1 or 2 mins'
 kubectl wait --for=condition=ready --timeout=600s -n kasten-io pod -l component=catalog
@@ -108,7 +117,7 @@ spec:
         namespace: kasten-io
     type: ObjectStore
     objectStore:
-      name: $(cat hcp_bucketname)
+      name: $(cat ecp_bucketname)
       objectStoreType: S3
       region: $MY_REGION
 EOF
@@ -179,7 +188,7 @@ spec:
 EOF
 
 echo '-------Accessing K10 UI'
-cat hcp-token
+cat ecp-token
 
 endtime=$(date +%s)
 duration=$(( $endtime - $starttime ))
