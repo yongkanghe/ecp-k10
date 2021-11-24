@@ -1,6 +1,6 @@
 echo '-------Deploying Postgresql on ECP and Protecting it via K10'
 starttime=$(date +%s)
-. ~/ecp-k10/setenv.sh
+. ./setenv.sh
 export AWS_ACCESS_KEY_ID=$(cat awsaccess | head -1 | sed -e 's/\"//g') 
 export AWS_SECRET_ACCESS_KEY=$(cat awsaccess | tail -1 | sed -e 's/\"//g')
 ecp_bucket_NAME=$MY_BUCKET-$(date +%s)
@@ -78,7 +78,6 @@ kubectl create secret generic k10-s3-secret \
 
 echo '-------Wait for 1 or 2 mins for the Web UI IP and token'
 kubectl wait --for=condition=ready --timeout=180s -n kasten-io pod -l component=jobs
-#k10ui=http://$(kubectl get svc gateway-ext | awk '{print $4}'|grep -v EXTERNAL)/k10/#
 kubectl expose service gateway -n kasten-io --type=NodePort --name=gateway-nodeport
 kubectl label service gateway-nodeport hpecp.hpe.com/hpecp-internal-gateway=true -n kasten-io
 
