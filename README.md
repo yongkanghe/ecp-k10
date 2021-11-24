@@ -42,7 +42,7 @@ vim setenv.sh
 5. Remove the objects from the bucket
 
 # Learn how to backup/restore containers on ECP Cluster
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/zMKIOCuEPyI/0.jpg)](https://www.youtube.com/watch?v=zMKIOCuEPyI)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/pYgJHSfogEE/0.jpg)](https://www.youtube.com/watch?v=pYgJHSfogEE)
 
 # HPE ECP Backup and Restore
 https://blog.kasten.io/protect-cloud-native-applications-on-hpe-ezmeral-with-kasten-k10
