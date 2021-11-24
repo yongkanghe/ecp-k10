@@ -8,7 +8,7 @@ kubectl delete ns k10-postgresql
 kubectl delete ns kasten-io
 
 echo '-------Deleting objects from the bucket'
-aws s3 rb s3://$(cat hcp_bucketname) --force
+aws s3 rb s3://$(cat ecp_bucketname) --force
 
 echo "" | awk '{print $1}'
 endtime=$(date +%s)
