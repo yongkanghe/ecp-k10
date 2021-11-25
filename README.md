@@ -41,7 +41,7 @@ vim setenv.sh
 4. Remove all the relevant snapshots
 5. Remove the objects from the bucket
 
-# Learn how to backup/restore containers on ECP Cluster
+# 3 minutes to protect containers on ECP Cluster
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/pYgJHSfogEE/0.jpg)](https://www.youtube.com/watch?v=pYgJHSfogEE)
 
 # HPE ECP Backup and Restore
