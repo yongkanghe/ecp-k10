@@ -1,3 +1,6 @@
 awsaccess
 ecp-token
 ecp_bucketname
+backupname
+exportname
+*kubeconfig
