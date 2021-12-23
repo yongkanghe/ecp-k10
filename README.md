@@ -1,3 +1,5 @@
+#### Follow [@YongkangHe](https://twitter.com/yongkanghe) on Twitter, Subscribe [K8s Data Management](https://www.youtube.com/channel/UCm-sw1b23K-scoVSCDo30YQ?sub_confirmation=1) Youtube Channel
+
 I just want to build a HPE Ezmeral Container Platform to learn the various Data Management capabilities e.g. Backup/Restore, Disaster Recovery and Application Mobility. It is challenging to create a HPE ECP cluster if you are not familiar to it. After the ECP Cluster is up running, we still need to install Kasten, create a sample DB, create policies etc.. The whole process is not that simple.
 
 ![image](https://f.hubspotusercontent30.net/hub/3855032/hubfs/Blog%20Images/HPE%20Ezmeral%20Container%20Platform/Blog-featured-hpe-ezmeral-kasten.png?width=720&name=Blog-featured-hpe-ezmeral-kasten.png)
@@ -5,6 +7,7 @@ I just want to build a HPE Ezmeral Container Platform to learn the various Data 
 This script based automation allows you to build a ready-to-use Kasten K10 demo environment on a running HPE Ezmeral Container Platform on AWS Cloud in 3 minutes. If you don't have a HPE ECP Cluster, you can watch the Youtube video and follow the guide to build a ECP cluster on AWS Cloud. Once the ECP Cluster is up running, you can proceed to the next steps. 
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/KUlH2o405oI/0.jpg)](https://www.youtube.com/watch?v=KUlH2o405oI)
+#### Subscribe [K8s Data Management](https://www.youtube.com/channel/UCm-sw1b23K-scoVSCDo30YQ?sub_confirmation=1) Youtube Channel
 
 # Here're the prerequisities. 
 1. Log in to the terminal where you can access the ECP Cluster via Kubectl
@@ -50,6 +53,7 @@ Sometime, we might end up not getting the Web Console IP. If that's the case, yo
 
 # 3 minutes to protect containers on ECP Cluster
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/pYgJHSfogEE/0.jpg)](https://www.youtube.com/watch?v=pYgJHSfogEE)
+#### Subscribe [K8s Data Management](https://www.youtube.com/channel/UCm-sw1b23K-scoVSCDo30YQ?sub_confirmation=1) Youtube Channel
 
 # HPE ECP Backup and Restore
 https://blog.kasten.io/protect-cloud-native-applications-on-hpe-ezmeral-with-kasten-k10
@@ -65,7 +69,7 @@ http://k10.yongkang.cloud
 
 # Contributors
 
-### [Yongkang He](http://yongkang.cloud)
+#### Follow [Yongkang He](http://yongkang.cloud) on LinkedIn, Join [Kubernetes Data Management](https://www.linkedin.com/groups/13983251) LinkedIn Group
 ### [Ron Xing](https://www.linkedin.com/in/ron-xing-hua/)
 
 
