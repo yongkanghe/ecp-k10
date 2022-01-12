@@ -39,6 +39,7 @@ EOF
 echo '-------Install K10'
 kubectl create ns kasten-io
 helm repo add kasten https://charts.kasten.io/
+# helm repo update
 helm install k10 kasten/k10 --namespace=kasten-io \
     --set global.persistence.metering.size=1Gi \
     --set prometheus.server.persistentVolume.size=1Gi \
